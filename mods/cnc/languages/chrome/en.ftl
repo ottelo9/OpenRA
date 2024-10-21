@@ -330,7 +330,7 @@ button-top-buttons-repair-tooltip = Repair
 button-top-buttons-beacon-tooltip = Place Beacon
 button-top-buttons-options-tooltip = Options
 button-production-types-building-tooltip = Buildings
-button-production-types-defence-tooltip = Support
+button-production-types-support-tooltip = Support
 button-production-types-infantry-tooltip = Infantry
 button-production-types-vehicle-tooltip = Vehicles
 button-production-types-aircraft-tooltip = Aircraft
@@ -670,6 +670,17 @@ label-gl-profile-dropdown-container = OpenGL Profile:
 label-restart-required-container-video-desc = Display and OpenGL changes require restart
 
 ## settings-hotkeys.yaml
+hotkey-group-game-commands = Game Commands
+hotkey-group-viewport-commands = Viewport Commands
+hotkey-group-observer-replay-commands = Observer / Replay Commands
+hotkey-group-unit-commands = Unit Commands
+hotkey-group-unit-stance-commands = Unit Stance Commands
+hotkey-group-production-commands = Production Commands
+hotkey-group-support-power-commands = Support Power Commands
+hotkey-group-music-commands = Music Commands
+hotkey-group-chat-commands = Chat Commands
+hotkey-group-control-groups = Control Groups
+hotkey-group-editor-commands = Editor Commands
 label-hotkeys-panel-filter-input = Filter by name:
 label-hotkeys-panel-context-dropdown = Context:
 label-hotkey-empty-list-message = No hotkeys match the filter criteria.

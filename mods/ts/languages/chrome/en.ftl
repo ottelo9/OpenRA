@@ -176,7 +176,7 @@ productionpalette-sidebar-production-palette =
    .hold = ON HOLD
 
 button-production-types-building-tooltip = Buildings
-button-production-types-defense-tooltip = Support
+button-production-types-support-tooltip = Support
 button-production-types-infantry-tooltip = Infantry
 button-production-types-vehicle-tooltip = Vehicles
 button-production-types-aircraft-tooltip = Aircraft
@@ -190,3 +190,6 @@ label-mainmenu-prerelease-notification-prompt-text-b = for the community to foll
 label-mainmenu-prerelease-notification-prompt-text-c = Many features are missing or incomplete, performance has not been
 label-mainmenu-prerelease-notification-prompt-text-d = optimized, and balance will not be addressed until a future beta.
 button-mainmenu-prerelease-notification-continue = I Understand
+
+## settings-hotkeys.yaml
+hotkey-group-depth-preview-debug = Depth Preview Debug

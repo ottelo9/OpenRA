@@ -21,6 +21,7 @@ using OpenRA.Mods.Common.Scripting;
 using OpenRA.Mods.Common.Scripting.Global;
 using OpenRA.Mods.Common.Traits;
 using OpenRA.Mods.Common.Warheads;
+using OpenRA.Mods.Common.Widgets.Logic;
 using OpenRA.Scripting;
 using OpenRA.Traits;
 using OpenRA.Widgets;
@@ -43,7 +44,7 @@ namespace OpenRA.Mods.Common.Lint
 
 			var mapTranslations = FieldLoader.GetValue<string[]>("value", map.TranslationDefinitions.Value);
 
-			var allModTranslations = modData.Manifest.Translations.Append(modData.Manifest.Get<ModContent>().Translation).ToArray();
+			var allModTranslations = modData.Manifest.Translations;
 			foreach (var language in GetModLanguages(allModTranslations))
 			{
 				// Check keys and variables are not missing across all language files.
@@ -79,7 +80,7 @@ namespace OpenRA.Mods.Common.Lint
 			foreach (var context in usedKeys.EmptyKeyContexts)
 				emitWarning($"Empty key in mod translation files required by {context}");
 
-			var allModTranslations = modData.Manifest.Translations.Append(modData.Manifest.Get<ModContent>().Translation).ToArray();
+			var allModTranslations = modData.Manifest.Translations.ToArray();
 			foreach (var language in GetModLanguages(allModTranslations))
 			{
 				Console.WriteLine($"Testing language: {language}");
@@ -249,41 +250,96 @@ namespace OpenRA.Mods.Common.Lint
 			testedFields.AddRange(
 				modData.ObjectCreator.GetTypes()
 				.Where(t => t.IsSubclassOf(typeof(TraitInfo)) || t.IsSubclassOf(typeof(Warhead)))
-				.SelectMany(t => t.GetFields().Where(f => f.HasAttribute<FluentReferenceAttribute>())));
+				.SelectMany(t => Utility.GetFields(t).Where(Utility.HasAttribute<FluentReferenceAttribute>)));
 
 			// TODO: linter does not work with LoadUsing
-			GetUsedTranslationKeysFromFieldsWithTranslationReferenceAttribute(
-				usedKeys, testedFields, Utility.GetFields(typeof(GameSpeed)), modData.Manifest.Get<GameSpeeds>().Speeds.Values);
+			foreach (var speed in modData.Manifest.Get<GameSpeeds>().Speeds)
+				GetUsedTranslationKeysFromFieldsWithTranslationReferenceAttribute(
+					usedKeys, testedFields,
+					Utility.GetFields(typeof(GameSpeed)),
+					new[] { speed.Value },
+					(obj, field) => $"`GameSpeeds.Speeds.{speed.Key}.{field.Name}` in mod.yaml");
 
 			// TODO: linter does not work with LoadUsing
-			GetUsedTranslationKeysFromFieldsWithTranslationReferenceAttribute(
-				usedKeys, testedFields,
-				Utility.GetFields(typeof(ResourceRendererInfo.ResourceTypeInfo)),
-				modData.DefaultRules.Actors
-					.SelectMany(actorInfo => actorInfo.Value.TraitInfos<ResourceRendererInfo>())
-					.SelectMany(info => info.ResourceTypes.Values));
+			foreach (var resource in modData.DefaultRules.Actors
+				.SelectMany(actorInfo => actorInfo.Value.TraitInfos<ResourceRendererInfo>())
+				.SelectMany(info => info.ResourceTypes))
+				GetUsedTranslationKeysFromFieldsWithTranslationReferenceAttribute(
+					usedKeys, testedFields,
+					Utility.GetFields(typeof(ResourceRendererInfo.ResourceTypeInfo)),
+					new[] { resource.Value },
+					(obj, field) => $"`ResourceRenderer.ResourceTypes.{resource.Key}.{field.Name}` in rules yaml");
 
 			const BindingFlags Binding = BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Static;
 			var constFields = modData.ObjectCreator.GetTypes().SelectMany(modType => modType.GetFields(Binding)).Where(f => f.IsLiteral);
 			GetUsedTranslationKeysFromFieldsWithTranslationReferenceAttribute(
-				usedKeys, testedFields, constFields, new[] { (object)null });
+				usedKeys, testedFields,
+				constFields,
+				new[] { (object)null },
+				(obj, field) => $"`{field.ReflectedType.Name}.{field.Name}`");
 
 			var modMetadataFields = typeof(ModMetadata).GetFields(BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance);
 			GetUsedTranslationKeysFromFieldsWithTranslationReferenceAttribute(
-				usedKeys, testedFields, modMetadataFields, new[] { modData.Manifest.Metadata });
+				usedKeys, testedFields,
+				modMetadataFields,
+				new[] { modData.Manifest.Metadata },
+				(obj, field) => $"`Metadata.{field.Name}` in mod.yaml");
 
 			var modContent = modData.Manifest.Get<ModContent>();
 			GetUsedTranslationKeysFromFieldsWithTranslationReferenceAttribute(
-				usedKeys, testedFields, Utility.GetFields(typeof(ModContent)), new[] { modContent });
+				usedKeys, testedFields,
+				Utility.GetFields(typeof(ModContent)),
+				new[] { modContent },
+				(obj, field) => $"`ModContent.{field.Name}` in mod.yaml");
 			GetUsedTranslationKeysFromFieldsWithTranslationReferenceAttribute(
-				usedKeys, testedFields, Utility.GetFields(typeof(ModContent.ModPackage)), modContent.Packages.Values);
+				usedKeys, testedFields,
+				Utility.GetFields(typeof(ModContent.ModPackage)),
+				modContent.Packages.Values.ToArray(),
+				(obj, field) => $"`ModContent.Packages.ContentPackage.{field.Name}` in mod.yaml");
+
+			GetUsedTranslationKeysFromFieldsWithTranslationReferenceAttribute(
+				usedKeys, testedFields,
+				Utility.GetFields(typeof(HotkeyDefinition)),
+				modData.Hotkeys.Definitions,
+				(obj, field) => $"`{obj.Name}.{field.Name}` in hotkeys yaml");
+
+			// All keycodes and modifiers should be marked as used, as they can all be configured for use at hotkeys at runtime.
+			GetUsedTranslationKeysFromFieldsWithTranslationReferenceAttribute(
+				usedKeys, testedFields,
+				Utility.GetFields(typeof(KeycodeExts)).Concat(Utility.GetFields(typeof(ModifiersExts))),
+				new[] { (object)null },
+				(obj, field) => $"`{field.ReflectedType.Name}.{field.Name}`");
+
+			foreach (var filename in modData.Manifest.ChromeLayout)
+				CheckHotkeysSettingsLogic(usedKeys, MiniYaml.FromStream(modData.DefaultFileSystem.Open(filename), filename));
+
+			static void CheckHotkeysSettingsLogic(Keys usedKeys, IEnumerable<MiniYamlNode> nodes)
+			{
+				foreach (var node in nodes)
+				{
+					if (node.Value.Nodes != null)
+						CheckHotkeysSettingsLogic(usedKeys, node.Value.Nodes);
+
+					if (node.Key != "Logic" || node?.Value.Value != "HotkeysSettingsLogic")
+						continue;
+
+					var hotkeyGroupsNode = node.Value.NodeWithKeyOrDefault("HotkeyGroups");
+					if (hotkeyGroupsNode == null)
+						continue;
+
+					var hotkeyGroupsKeys = hotkeyGroupsNode?.Value.Nodes.Select(n => n.Key);
+					foreach (var key in hotkeyGroupsKeys)
+						usedKeys.Add(key, new FluentReferenceAttribute(), $"`{nameof(HotkeysSettingsLogic)}.HotkeyGroups`");
+				}
+			}
 
 			return (usedKeys, testedFields);
 		}
 
-		static void GetUsedTranslationKeysFromFieldsWithTranslationReferenceAttribute(
+		static void GetUsedTranslationKeysFromFieldsWithTranslationReferenceAttribute<T>(
 			Keys usedKeys, List<FieldInfo> testedFields,
-			IEnumerable<FieldInfo> newFields, IEnumerable<object> objects)
+			IEnumerable<FieldInfo> newFields, IEnumerable<T> objects,
+			Func<T, FieldInfo, string> getContext)
 		{
 			var fieldsWithAttribute =
 				newFields
@@ -297,7 +353,7 @@ namespace OpenRA.Mods.Common.Lint
 				{
 					var keys = LintExts.GetFieldValues(obj, field, fluentReference.DictionaryReference);
 					foreach (var key in keys)
-						usedKeys.Add(key, fluentReference, $"`{field.ReflectedType.Name}.{field.Name}`");
+						usedKeys.Add(key, fluentReference, getContext(obj, field));
 				}
 			}
 		}
