@@ -12,8 +12,6 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using OpenRA.Mods.Common;
-using OpenRA.Mods.Common.Traits;
 using OpenRA.Traits;
 
 namespace OpenRA.Mods.Common.Traits
@@ -22,10 +20,10 @@ namespace OpenRA.Mods.Common.Traits
 	public class CratePickupBotModuleInfo : ConditionalTraitInfo
 	{
 		[Desc("Actor types that should not start hunting for crates.")]
-		public readonly HashSet<string> ExcludedUnitTypes = new HashSet<string>();
+		public readonly HashSet<string> ExcludedUnitTypes = new();
 
 		[Desc("Only these actor types should start hunting for crates.")]
-		public readonly HashSet<string> IncludedUnitTypes = new HashSet<string>();
+		public readonly HashSet<string> IncludedUnitTypes = new();
 
 		[Desc("Interval (in ticks) between giving out orders to idle units.")]
 		public readonly int ScanForCratesInterval = 50;
@@ -52,7 +50,7 @@ namespace OpenRA.Mods.Common.Traits
 
 		int scanForCratesTicks;
 
-		readonly List<Actor> alreadyPursuitCrates = new List<Actor>();
+		readonly List<Actor> alreadyPursuitCrates = new();
 
 		public CratePickupBotModule(Actor self, CratePickupBotModuleInfo info)
 			: base(info)
@@ -84,17 +82,18 @@ namespace OpenRA.Mods.Common.Traits
 			scanForCratesTicks = Info.ScanForCratesInterval;
 
 			var crates = world.ActorsHavingTrait<Crate>().ToList();
-			//AIUtils.BotDebug($"Crates = {crates.Any()}");
-			if (!crates.Any())
+
+			// AIUtils.BotDebug($"Crates = {crates.Any()}");
+			if (crates.Count == 0)
 				return;
 
 			if (Info.CheckTargetsForVisibility)
 				crates.RemoveAll(c => !c.CanBeViewedByPlayer(player));
 
 			var idleUnits = world.ActorsHavingTrait<Mobile>().Where(a => a.Owner == player && a.IsIdle
-				&& (Info.IncludedUnitTypes.Contains(a.Info.Name) || (!Info.IncludedUnitTypes.Any() && !Info.ExcludedUnitTypes.Contains(a.Info.Name)))).ToList();
+				&& (Info.IncludedUnitTypes.Contains(a.Info.Name) || (Info.IncludedUnitTypes.Count == 0 && !Info.ExcludedUnitTypes.Contains(a.Info.Name)))).ToList();
 
-			if (!idleUnits.Any())
+			if (idleUnits.Count == 0)
 				return;
 
 			foreach (var crate in crates)
