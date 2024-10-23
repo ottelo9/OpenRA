@@ -92,7 +92,7 @@ Player:
 	-ModularBot@NavalAI:
 	-ModularBot@TurtleAI:
 	ModularBot@DropZone:
-		Name: DropZone AI
+		Name: dropzone-ai-name
 		Type: dropzone
 	GrantConditionOnBotOwner@dropzone:
 		Condition: enable-dropzone-ai
