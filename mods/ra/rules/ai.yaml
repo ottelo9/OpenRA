@@ -295,7 +295,7 @@ Player:
 		RequiresCondition: enable-rush-ai
 		SquadSize: 20
 		NavalUnitsTypes: ss, msub, dd, ca, lst, pt
-		ExcludeFromSquadsTypes: harv, mcv, dog, badr.bomber, u2
+		ExcludeFromSquadsTypes: harv, mcv, dog, badr.bomber, u2, e6
 		ConstructionYardTypes: fact
 		AirUnitsTypes: mig, yak, heli, hind, mh60
 		AircraftTargetType: AirborneActor
@@ -306,6 +306,12 @@ Player:
 		McvTypes: mcv
 		ConstructionYardTypes: fact
 		McvFactoryTypes: weap
+	PriorityCaptureManagerBotModule:
+		RequiresCondition: enable-rush-ai || enable-normal-ai || enable-turtle-ai
+		CapturingActorTypes: e6
+		CapturableActorTypes: oilb, hosp, fcom, miss
+		CapturableStances: Neutral
+		CheckCaptureTargetsForVisibility: false
 	UnitBuilderBotModule@rush:
 		RequiresCondition: enable-rush-ai
 		UnitsToBuild:
@@ -313,6 +319,7 @@ Player:
 			e2: 15
 			e3: 30
 			e4: 15
+			e6: 1
 			dog: 15
 			shok: 15
 			harv: 10
@@ -329,6 +336,7 @@ Player:
 			stnk: 5
 		UnitLimits:
 			dog: 4
+			e6: 1
 			harv: 8
 			jeep: 4
 			ftrk: 4
@@ -336,7 +344,7 @@ Player:
 		RequiresCondition: enable-normal-ai
 		SquadSize: 40
 		NavalUnitsTypes: ss, msub, dd, ca, lst, pt
-		ExcludeFromSquadsTypes: harv, mcv, dog, badr.bomber, u2
+		ExcludeFromSquadsTypes: harv, mcv, dog, badr.bomber, u2, e6
 		ConstructionYardTypes: fact
 		NavalProductionTypes: spen, syrd
 		AirUnitsTypes: mig, yak, heli, hind, mh60
@@ -350,6 +358,7 @@ Player:
 			e2: 15
 			e3: 30
 			e4: 15
+			e6: 1
 			dog: 15
 			shok: 15
 			harv: 15
@@ -375,6 +384,7 @@ Player:
 			pt: 10
 		UnitLimits:
 			dog: 4
+			e6: 1
 			harv: 8
 			jeep: 4
 			ftrk: 4
@@ -382,7 +392,7 @@ Player:
 		RequiresCondition: enable-turtle-ai
 		SquadSize: 10
 		NavalUnitsTypes: ss, msub, dd, ca, lst, pt
-		ExcludeFromSquadsTypes: harv, mcv, dog, badr.bomber, u2, mnly
+		ExcludeFromSquadsTypes: harv, mcv, dog, badr.bomber, u2, mnly, e6
 		ConstructionYardTypes: fact
 		NavalProductionTypes: spen, syrd
 		AirUnitsTypes: mig, yak, heli, hind, mh60
@@ -396,6 +406,7 @@ Player:
 			e2: 15
 			e3: 30
 			e4: 15
+			e6: 1
 			dog: 15
 			shok: 15
 			harv: 15
@@ -422,6 +433,7 @@ Player:
 			mnly: 2
 		UnitLimits:
 			dog: 4
+			e6: 1
 			harv: 8
 			jeep: 4
 			ftrk: 4
@@ -436,7 +448,7 @@ Player:
 	SquadManagerBotModule@naval:
 		RequiresCondition: enable-naval-ai
 		SquadSize: 1
-		ExcludeFromSquadsTypes: harv, mcv, dog, badr.bomber, u2
+		ExcludeFromSquadsTypes: harv, mcv, dog, badr.bomber, u2, e6
 		NavalUnitsTypes: ss, msub, dd, ca, lst, pt
 		ConstructionYardTypes: fact
 		NavalProductionTypes: spen, syrd
