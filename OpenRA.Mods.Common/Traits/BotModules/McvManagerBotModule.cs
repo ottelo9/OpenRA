@@ -28,11 +28,11 @@ namespace OpenRA.Mods.Common.Traits
 		[Desc("Actor types that are able to produce MCVs.")]
 		public readonly HashSet<string> McvFactoryTypes = new();
 
-		[Desc("Try to maintain at least this many ConstructionYardTypes, build an MCV if number is below this.")]
-		public readonly int MinimumConstructionYardCount = 1;
-
 		[Desc("Delay (in ticks) between looking for and giving out orders to new MCVs.")]
 		public readonly int ScanForNewMcvInterval = 20;
+
+		[Desc("Maximum allowed number of MCVs.")]
+		public readonly int MaxAllowedMCVs = 2;
 
 		[Desc("Minimum distance in cells from center of the base when checking for MCV deployment location.")]
 		public readonly int MinBaseRadius = 2;
@@ -50,12 +50,20 @@ namespace OpenRA.Mods.Common.Traits
 	public class McvManagerBotModule : ConditionalTrait<McvManagerBotModuleInfo>,
 		IBotTick, IBotPositionsUpdated, IGameSaveTraitData, INotifyActorDisposing
 	{
-		public CPos GetRandomBaseCenter()
+		public CPos GetBaseCenter(bool random = false)
 		{
-			var randomConstructionYard = constructionYards.Actors
-				.RandomOrDefault(world.LocalRandom);
+			if (!random)
+				return initialBaseCenter;
 
-			return randomConstructionYard?.Location ?? initialBaseCenter;
+			var randomBotCYard = constructionYards.Actors.
+				RandomOrDefault(world.LocalRandom);
+
+			var newBaseCenterLocation = world.Map.FindTilesInAnnulus(randomBotCYard.Location,
+				Info.MaxBaseRadius, world.Map.Grid.MaximumTileSearchRange)
+				.Where(a => resourceLayer.GetResource(a).Type != null)
+				.Shuffle(world.LocalRandom).RandomOrDefault(world.LocalRandom);
+
+			return newBaseCenterLocation;
 		}
 
 		readonly World world;
@@ -66,7 +74,7 @@ namespace OpenRA.Mods.Common.Traits
 
 		IBotPositionsUpdated[] notifyPositionsUpdated;
 		IBotRequestUnitProduction[] requestUnitProduction;
-
+		IResourceLayer resourceLayer;
 		CPos initialBaseCenter;
 		int scanInterval;
 		bool firstTick = true;
@@ -85,6 +93,7 @@ namespace OpenRA.Mods.Common.Traits
 		{
 			notifyPositionsUpdated = self.Owner.PlayerActor.TraitsImplementing<IBotPositionsUpdated>().ToArray();
 			requestUnitProduction = self.Owner.PlayerActor.TraitsImplementing<IBotRequestUnitProduction>().ToArray();
+			resourceLayer = self.World.WorldActor.TraitOrDefault<IResourceLayer>();
 		}
 
 		protected override void TraitEnabled(Actor self)
@@ -115,7 +124,7 @@ namespace OpenRA.Mods.Common.Traits
 
 				// No construction yards - Build a new MCV
 				var unitBuilder = requestUnitProduction.FirstEnabledTraitOrDefault();
-				if (unitBuilder != null && Info.McvTypes.Count > 0 && ShouldBuildMCV())
+				if (unitBuilder != null && Info.McvTypes.Count > 0 && AllowedToBuildMCV())
 				{
 					var mcvType = Info.McvTypes.Random(world.LocalRandom);
 					if (unitBuilder.RequestedProductionCount(bot, mcvType) == 0)
@@ -124,7 +133,12 @@ namespace OpenRA.Mods.Common.Traits
 			}
 		}
 
-		bool ShouldBuildMCV()
+		int CountConstructionYards()
+		{
+			return AIUtils.CountActorByCommonName(constructionYards);
+		}
+
+		bool AllowedToBuildMCV()
 		{
 			// Only build MCV if we don't already have one in the field.
 			var allowedToBuildMCV = AIUtils.CountActorByCommonName(mcvs) == 0;
@@ -132,8 +146,7 @@ namespace OpenRA.Mods.Common.Traits
 				return false;
 
 			// Build MCV if we don't have the desired number of construction yards, unless we have no factory (can't build it).
-			return AIUtils.CountActorByCommonName(constructionYards) < Info.MinimumConstructionYardCount &&
-				AIUtils.CountActorByCommonName(mcvFactories) > 0;
+			return AIUtils.CountActorByCommonName(mcvFactories) > 0 && CountConstructionYards() < Info.MaxAllowedMCVs;
 		}
 
 		void DeployMcvs(IBot bot, bool chooseLocation)
@@ -156,7 +169,7 @@ namespace OpenRA.Mods.Common.Traits
 					AIUtils.CountActorByCommonName(constructionYards) > 0;
 
 				var transformsInfo = mcv.Info.TraitInfo<TransformsInfo>();
-				var desiredLocation = ChooseMcvDeployLocation(transformsInfo.IntoActor, transformsInfo.Offset, restrictToBase);
+				var desiredLocation = ChooseMcvDeployLocation(transformsInfo.IntoActor, transformsInfo.Offset, CountConstructionYards() == 0 && restrictToBase);
 				if (desiredLocation == null)
 					return;
 
@@ -200,10 +213,38 @@ namespace OpenRA.Mods.Common.Traits
 				return null;
 			}
 
-			var baseCenter = GetRandomBaseCenter();
+			var baseCenter = GetBaseCenter(!distanceToBaseIsImportant);
 
-			return FindPos(baseCenter, baseCenter, Info.MinBaseRadius,
+			var bc = FindPos(baseCenter, baseCenter, Info.MinBaseRadius,
 				distanceToBaseIsImportant ? Info.MaxBaseRadius : world.Map.Grid.MaximumTileSearchRange);
+
+
+			if (!bc.HasValue)
+				return null;
+
+			baseCenter = bc.Value;
+
+			var wPos = world.Map.CenterOfCell(bc.Value);
+			var newBaseRadius = WDist.FromCells(Info.MaxBaseRadius);
+
+			var actors = world.FindActorsInCircle(wPos, newBaseRadius)
+				.Where(a => !a.Disposed);
+
+			if (actors != null)
+			{
+				var enemies = actors.Any(a => !a.Disposed && player.IsAlliedWith(a.Owner) && a.Info.HasTraitInfo<BuildingInfo>());
+
+				if (enemies)
+					return null;
+			}
+
+			var anyOwnBaseActorsNearbyDesiredCell = actors.Any(a => a.Owner == player &&
+				(Info.McvTypes.Contains(a.Info.Name) || Info.ConstructionYardTypes.Contains(a.Info.Name)));
+
+			if (anyOwnBaseActorsNearbyDesiredCell)
+				return null;
+
+			return baseCenter;
 		}
 
 		List<MiniYamlNode> IGameSaveTraitData.IssueTraitData(Actor self)

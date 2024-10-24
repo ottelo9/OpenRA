@@ -36,10 +36,10 @@ namespace OpenRA.Mods.Common.Traits
 
 		[Desc("Maximum number of options to consider for capturing.",
 			"If a value less than 1 is given 1 will be used instead.")]
-		public readonly int MaximumCaptureTargetOptions = 10;
+		public readonly int MaximumCaptureTargetOptions = 30;
 
 		[Desc("Should visibility (Shroud, Fog, Cloak, etc) be considered when searching for capturable targets?")]
-		public readonly bool CheckCaptureTargetsForVisibility = true;
+		public readonly bool CheckCaptureTargetsForVisibility = false;
 
 		[Desc("Player stances that capturers should attempt to target.")]
 		public readonly PlayerRelationship CapturableStances = PlayerRelationship.Enemy | PlayerRelationship.Neutral;
@@ -165,7 +165,7 @@ namespace OpenRA.Mods.Common.Traits
 			}
 		}
 
-		Target SafePath(Actor capturer, Actor target)
+		/*Target SafePath(Actor capturer, Actor target)
 		{
 			var mobile = capturer.Trait<Mobile>();
 			var path = mobile.PathFinder.FindPathToTargetCell(
@@ -173,6 +173,21 @@ namespace OpenRA.Mods.Common.Traits
 				location => world.FindActorsInCircle(world.Map.CenterOfCell(location), Info.EnemyAvoidanceRadius)
 						.Where(u => !u.IsDead && capturer.Owner.RelationshipWith(u.Owner) == PlayerRelationship.Enemy && capturer.IsTargetableBy(u))
 						.Sum(u => Math.Max(WDist.Zero.Length, Info.EnemyAvoidanceRadius.Length - (world.Map.CenterOfCell(location) - u.CenterPosition).Length)));
+
+			if (path.Count == 0)
+				return Target.Invalid;
+
+			return Target.FromActor(target);
+		}*/
+
+		Target SafePath(Actor capturer, Actor target)
+		{
+			var mobile = capturer.Trait<Mobile>();
+			var path = mobile.PathFinder.FindPathToTargetCell(
+				capturer, new[] { capturer.Location }, target.Location, BlockedByActor.None,
+				location => world.FindActorsInCircle(world.Map.CenterOfCell(location), Info.EnemyAvoidanceRadius)
+					.Where(u => !u.IsDead && capturer.Owner.RelationshipWith(u.Owner) == PlayerRelationship.Enemy)
+					.Sum(u => Math.Max(WDist.Zero.Length, Info.EnemyAvoidanceRadius.Length - (world.Map.CenterOfCell(location) - u.CenterPosition).Length)));
 
 			if (path.Count == 0)
 				return Target.Invalid;
