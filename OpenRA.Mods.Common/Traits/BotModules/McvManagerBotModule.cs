@@ -218,7 +218,6 @@ namespace OpenRA.Mods.Common.Traits
 			var bc = FindPos(baseCenter, baseCenter, Info.MinBaseRadius,
 				distanceToBaseIsImportant ? Info.MaxBaseRadius : world.Map.Grid.MaximumTileSearchRange);
 
-
 			if (!bc.HasValue)
 				return null;
 
