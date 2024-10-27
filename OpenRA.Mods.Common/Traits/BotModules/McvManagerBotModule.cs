@@ -58,6 +58,10 @@ namespace OpenRA.Mods.Common.Traits
 			var randomBotCYard = constructionYards.Actors.
 				RandomOrDefault(world.LocalRandom);
 
+			//important! Otherwise game can crash at the beginning of a skirmish vs lot of AI
+			if (randomBotCYard == null)
+				return CPos.Zero;
+
 			var newBaseCenterLocation = world.Map.FindTilesInAnnulus(randomBotCYard.Location,
 				Info.MaxBaseRadius, world.Map.Grid.MaximumTileSearchRange)
 				.Where(a => resourceLayer.GetResource(a).Type != null)
@@ -76,7 +80,7 @@ namespace OpenRA.Mods.Common.Traits
 		IBotRequestUnitProduction[] requestUnitProduction;
 		IResourceLayer resourceLayer;
 		CPos initialBaseCenter;
-		int scanInterval;
+		int scanInterval=20;
 		bool firstTick = true;
 
 		public McvManagerBotModule(Actor self, McvManagerBotModuleInfo info)
@@ -116,8 +120,7 @@ namespace OpenRA.Mods.Common.Traits
 				DeployMcvs(bot, false);
 				firstTick = false;
 			}
-
-			if (--scanInterval <= 0)
+			else if (--scanInterval <= 0)
 			{
 				scanInterval = Info.ScanForNewMcvInterval;
 				DeployMcvs(bot, true);
