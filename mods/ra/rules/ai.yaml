@@ -98,6 +98,8 @@ Player:
 		ProductionTypes: barr,tent,weap
 		SiloTypes: silo
 		DefenseTypes: hbox,pbox,gun,ftur,tsla,agun,sam
+		WallTypes: brik
+		WalledStructures: fact
 		BuildingLimits:
 			proc: 4
 			barr: 1
@@ -143,14 +145,16 @@ Player:
 		NavalProductionTypes: spen, syrd
 		SiloTypes: silo
 		DefenseTypes: hbox,pbox,gun,ftur,tsla,agun,sam
+		WallTypes: brik
+		WalledStructures: fact
 		BuildingLimits:
 			proc: 6
 			barr: 3
 			tent: 3
 			dome: 1
 			weap: 3
-			spen: 2
-			syrd: 2
+			spen: 1
+			syrd: 1
 			hpad: 4
 			afld: 4
 			afld.ukraine: 4
@@ -197,6 +201,8 @@ Player:
 		NavalProductionTypes: spen, syrd
 		SiloTypes: silo
 		DefenseTypes: hbox,pbox,gun,ftur,tsla,agun,sam
+		WallTypes: brik
+		WalledStructures: fact
 		BuildingLimits:
 			proc: 4
 			barr: 1
@@ -252,6 +258,8 @@ Player:
 		NavalProductionTypes: spen, syrd
 		SiloTypes: silo
 		DefenseTypes: hbox,pbox,gun,ftur,tsla,agun,sam
+		WallTypes: brik
+		WalledStructures: fact
 		BuildingLimits:
 			proc: 3
 			dome: 1
