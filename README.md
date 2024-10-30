@@ -1,6 +1,8 @@
 ## Modifications for OpenRA:
 I forked the OpenRA repo and included few AI/Bots improvements that were created by others but never implemented (for certain partially understandable reasons).
 
+I have only implemented the changes for Red Alert (ra). However, they can easily be added for the other mods as well. To do this, the ai.yaml for the mod must be adjusted.
+
 ## Why?
 I wanted to play Red Alert with a few friends against bots and the bots should be super difficult. I felt that was missing something and so I implemented the improvements (PRs) and slightly modified / adapted them for the latest OpenRA version.
 
