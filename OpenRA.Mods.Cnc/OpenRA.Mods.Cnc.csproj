@@ -11,4 +11,8 @@
       <Private>False</Private>
     </ProjectReference>
   </ItemGroup>
+
+  <ItemGroup>
+    <Folder Include="Traits\BotModules\BotModuleLogic\" />
+  </ItemGroup>
 </Project>

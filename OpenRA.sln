@@ -24,8 +24,15 @@ EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "OpenRA.WindowsLauncher", "OpenRA.WindowsLauncher\OpenRA.WindowsLauncher.csproj", "{912B578E-0BC0-4987-807B-1E294A87DA37}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{1C267646-62A9-4D3B-9C37-499F56731538}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "mods-ra-rules", "mods-ra-rules", "{9D6EDF11-5A63-4CB4-A78E-C0E405C4BCFE}"
 	ProjectSection(SolutionItems) = preProject
 		mods\ra\rules\ai.yaml = mods\ra\rules\ai.yaml
+	EndProjectSection
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "mods-ts-rules", "mods-ts-rules", "{500C77DD-D7A8-4338-8CE6-C74FFDB4EFA5}"
+	ProjectSection(SolutionItems) = preProject
+		mods\ts\rules\ai.yaml = mods\ts\rules\ai.yaml
 	EndProjectSection
 EndProject
 Global
@@ -73,6 +80,10 @@ Global
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(NestedProjects) = preSolution
+		{9D6EDF11-5A63-4CB4-A78E-C0E405C4BCFE} = {1C267646-62A9-4D3B-9C37-499F56731538}
+		{500C77DD-D7A8-4338-8CE6-C74FFDB4EFA5} = {1C267646-62A9-4D3B-9C37-499F56731538}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {9E2FAACA-DADB-4EEB-9898-2B0269F45E69}

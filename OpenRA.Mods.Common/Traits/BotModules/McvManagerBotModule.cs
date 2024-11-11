@@ -28,6 +28,9 @@ namespace OpenRA.Mods.Common.Traits
 		[Desc("Actor types that are able to produce MCVs.")]
 		public readonly HashSet<string> McvFactoryTypes = new();
 
+		[Desc("Actor type that is needed to allow to produce MCVs (Service depot=fix).")]
+		public readonly HashSet<string> McvRequiredTechToBuild = new();
+
 		[Desc("Delay (in ticks) between looking for and giving out orders to new MCVs.")]
 		public readonly int ScanForNewMcvInterval = 20;
 
@@ -74,6 +77,7 @@ namespace OpenRA.Mods.Common.Traits
 		readonly Player player;
 		readonly ActorIndex.OwnerAndNamesAndTrait<TransformsInfo> mcvs;
 		readonly ActorIndex.OwnerAndNamesAndTrait<BuildingInfo> constructionYards;
+		readonly ActorIndex.OwnerAndNamesAndTrait<BuildingInfo> servicedepot;
 		readonly ActorIndex.OwnerAndNamesAndTrait<BuildingInfo> mcvFactories;
 
 		IBotPositionsUpdated[] notifyPositionsUpdated;
@@ -90,6 +94,7 @@ namespace OpenRA.Mods.Common.Traits
 			player = self.Owner;
 			mcvs = new ActorIndex.OwnerAndNamesAndTrait<TransformsInfo>(world, info.McvTypes, player);
 			constructionYards = new ActorIndex.OwnerAndNamesAndTrait<BuildingInfo>(world, info.ConstructionYardTypes, player);
+			servicedepot = new ActorIndex.OwnerAndNamesAndTrait<BuildingInfo>(world, info.McvRequiredTechToBuild, player);
 			mcvFactories = new ActorIndex.OwnerAndNamesAndTrait<BuildingInfo>(world, info.McvFactoryTypes, player);
 		}
 
@@ -127,7 +132,7 @@ namespace OpenRA.Mods.Common.Traits
 
 				// No construction yards - Build a new MCV
 				var unitBuilder = requestUnitProduction.FirstEnabledTraitOrDefault();
-				if (unitBuilder != null && Info.McvTypes.Count > 0 && AllowedToBuildMCV())
+				if (unitBuilder != null && Info.McvTypes.Count > 0 && AllowedToBuildMCV() && AIUtils.CountActorByCommonName(servicedepot) > 0)
 				{
 					var mcvType = Info.McvTypes.Random(world.LocalRandom);
 					if (unitBuilder.RequestedProductionCount(bot, mcvType) == 0)

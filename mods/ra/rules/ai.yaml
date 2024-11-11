@@ -303,7 +303,7 @@ Player:
 		RequiresCondition: enable-rush-ai
 		SquadSize: 20
 		NavalUnitsTypes: ss, msub, dd, ca, lst, pt
-		ExcludeFromSquadsTypes: harv, mcv, dog, badr.bomber, u2, e6
+		ExcludeFromSquadsTypes: harv, mcv, dog, badr.bomber, u2, e6, dtrk, qtnk, spy, spy.england
 		ConstructionYardTypes: fact
 		AirUnitsTypes: mig, yak, heli, hind, mh60
 		AircraftTargetType: AirborneActor
@@ -314,6 +314,7 @@ Player:
 		McvTypes: mcv
 		ConstructionYardTypes: fact
 		McvFactoryTypes: weap
+		McvRequiredTechToBuild: fix
 	PriorityCaptureManagerBotModule:
 		RequiresCondition: enable-rush-ai || enable-normal-ai || enable-turtle-ai
 		CapturingActorTypes: e6
@@ -330,6 +331,8 @@ Player:
 			e6: 2
 			dog: 15
 			shok: 15
+			spy: 2
+			spy.england: 2
 			harv: 10
 			apc: 30
 			jeep: 20
@@ -342,17 +345,21 @@ Player:
 			4tnk: 25
 			ttnk: 25
 			stnk: 5
+			dtrk: 1
+			qtnk: 1
 		UnitLimits:
 			dog: 4
 			e6: 2
 			harv: 8
 			jeep: 4
 			ftrk: 4
+			dtrk: 1
+			qtnk: 1
 	SquadManagerBotModule@normal:
 		RequiresCondition: enable-normal-ai
 		SquadSize: 40
 		NavalUnitsTypes: ss, msub, dd, ca, lst, pt
-		ExcludeFromSquadsTypes: harv, mcv, dog, badr.bomber, u2, e6
+		ExcludeFromSquadsTypes: harv, mcv, dog, badr.bomber, u2, e6, dtrk, qtnk, spy, spy.england
 		ConstructionYardTypes: fact
 		NavalProductionTypes: spen, syrd
 		AirUnitsTypes: mig, yak, heli, hind, mh60
@@ -370,6 +377,8 @@ Player:
 			dog: 15
 			shok: 15
 			harv: 15
+			spy: 2
+			spy.england: 2
 			apc: 30
 			jeep: 20
 			arty: 15
@@ -390,17 +399,21 @@ Player:
 			dd: 10
 			ca: 10
 			pt: 10
+			dtrk: 1
+			qtnk: 1
 		UnitLimits:
 			dog: 4
 			e6: 2
 			harv: 8
 			jeep: 4
 			ftrk: 4
+			dtrk: 1
+			qtnk: 1
 	SquadManagerBotModule@turtle:
 		RequiresCondition: enable-turtle-ai
 		SquadSize: 10
 		NavalUnitsTypes: ss, msub, dd, ca, lst, pt
-		ExcludeFromSquadsTypes: harv, mcv, dog, badr.bomber, u2, mnly, e6
+		ExcludeFromSquadsTypes: harv, mcv, dog, badr.bomber, u2, mnly, e6, dtrk, qtnk, spy, spy.england
 		ConstructionYardTypes: fact
 		NavalProductionTypes: spen, syrd
 		AirUnitsTypes: mig, yak, heli, hind, mh60
@@ -417,6 +430,8 @@ Player:
 			e6: 2
 			dog: 15
 			shok: 15
+			spy: 2
+			spy.england: 2
 			harv: 15
 			apc: 30
 			jeep: 20
@@ -439,6 +454,8 @@ Player:
 			ca: 10
 			pt: 10
 			mnly: 2
+			dtrk: 1
+			qtnk: 1
 		UnitLimits:
 			dog: 4
 			e6: 2
@@ -446,6 +463,8 @@ Player:
 			jeep: 4
 			ftrk: 4
 			mnly: 2
+			dtrk: 1
+			qtnk: 1
 	MinelayerBotModule@turtle:
 		RequiresCondition: enable-turtle-ai
 		MinelayingActorTypes: mnly
@@ -456,7 +475,7 @@ Player:
 	SquadManagerBotModule@naval:
 		RequiresCondition: enable-naval-ai
 		SquadSize: 1
-		ExcludeFromSquadsTypes: harv, mcv, dog, badr.bomber, u2, e6
+		ExcludeFromSquadsTypes: harv, mcv, dog, badr.bomber, u2, e6, dtrk, qtnk, spy, spy.england
 		NavalUnitsTypes: ss, msub, dd, ca, lst, pt
 		ConstructionYardTypes: fact
 		NavalProductionTypes: spen, syrd
@@ -467,6 +486,8 @@ Player:
 	UnitBuilderBotModule@naval:
 		RequiresCondition: enable-naval-ai
 		UnitsToBuild:
+			spy: 2
+			spy.england: 2
 			harv: 1
 			ftrk: 40
 			arty: 40
@@ -489,3 +510,34 @@ Player:
 			jeep: 1
 		UnitDelays:
 			harv: 10000
+	SendUnitToAttackBotModule@Mad:
+		RequiresCondition: enable-rush-ai || enable-normal-ai || enable-turtle-ai || enable-naval-ai
+		ActorTypesAndAttackOptions: 
+			dtrk:
+				AttackDesireOfEach: 100
+				MoveToOrderName: AssaultMove
+				MoveBackOrderName: AssaultMove
+			qtnk:
+				AttackDesireOfEach: 100
+				AttackOrderName: DetonateAttack
+				MoveBackOrderName: Detonate
+		ValidTargets: Structure
+		InvalidTargets: WaterActor
+	SendUnitToAttackBotModule@SendSpy:
+		RequiresCondition: enable-rush-ai || enable-normal-ai || enable-turtle-ai || enable-naval-ai
+		ActorTypesAndAttackOptions: 
+			spy: 
+				AttackDesireOfEach: 100
+				TryDisguise: True
+				TryGetHealed: False
+				AttackRequires: Disguised
+				AttackOrderName: Infiltrate
+			spy.england: 
+				AttackDesireOfEach: 100
+				TryDisguise: True
+				TryGetHealed: False
+				AttackRequires: Disguised
+				AttackOrderName: Infiltrate
+		ValidTargets: SpyInfiltrate
+		InvalidTargets: WaterActor
+		TargetDistances: Random
