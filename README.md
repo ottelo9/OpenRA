@@ -12,6 +12,7 @@ I wanted to play Red Alert with a few friends against bots and the bots should b
 - https://github.com/OpenRA/OpenRA/pull/17831 AI bridge repair
 - https://github.com/OpenRA/OpenRA/pull/21316 AI build additional MCVs
 - https://github.com/OpenRA/OpenRA/pull/19853 AI build walls
+- https://github.com/OpenRA/OpenRA/pull/21060 AI send spy, bomb truck, madtank and subtank (dtrk, qtnk, spy, spy.england). For RA and TS
 
 ## OpenRA
 For a OpenRA description see original repo
