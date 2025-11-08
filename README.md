@@ -1,3 +1,6 @@
+[![GitHub release (latest SemVer)](https://img.shields.io/github/v/release/ottelo9/OpenRA?style=for-the-badge)](https://github.com/ottelo9/OpenRA/releases/latest)
+[![GitHub All Releases](https://img.shields.io/github/downloads/ottelo9/OpenRA/total?logo=github&style=for-the-badge)](https://github.com/ottelo9/OpenRA/releases/latest)
+
 ## Modifications for OpenRA:
 I forked the OpenRA repo and included few AI/Bots improvements that were created by others but never implemented (for certain partially understandable reasons).
 
